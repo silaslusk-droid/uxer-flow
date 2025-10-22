@@ -1,26 +1,43 @@
 # Self-Hosted Sitemap Generator
 
-[![Docker](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node.js-16+-green)](https://nodejs.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A lightweight, self-hosted visual sitemap generator. Crawl websites, edit sitemaps visually, and export XML. No coding required.
+A lightweight, self-hosted visual sitemap generator with modern UI and dark mode support. Crawl websites, edit sitemaps visually, and export XML. No Docker required!
 
 ---
 
-## 🚀 One-Click Windows Setup (No Coding Required)
+## 🚀 Quick Start (No Docker Required)
 
-1. **Install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)**
-   - Download and install Docker Desktop (free)
-   - Start Docker Desktop
+### Option 1: One-Click Setup (Windows)
+1. **Install [Node.js](https://nodejs.org/) (version 16 or higher)**
 2. **Download this project as a ZIP from GitHub**
    - Click the green "Code" button → "Download ZIP"
    - Extract the ZIP to a folder (e.g. `C:\SitemapGenerator`)
-3. **Double-click `docker-compose-up.bat`**
-   - This will start everything automatically (no command line needed)
+3. **Double-click `setup.bat`**
+   - This will install all dependencies and build the project
    - Wait for setup to finish (first run may take a few minutes)
-4. **Open [http://localhost:5173](http://localhost:5173) in your browser**
+4. **Double-click `start-dev.bat`**
+   - This will start both frontend and backend servers
+5. **Open [http://localhost:5173](http://localhost:5173) in your browser**
    - Use the app! All data is stored locally.
 
-> **To stop:** Double-click `docker-compose-down.bat` in the same folder.
+### Option 2: Command Line Setup
+```bash
+# Install dependencies
+npm run install:all
+
+# Start development servers
+npm run dev
+```
+
+### Option 3: Production Mode
+```bash
+# Install and build everything
+npm run setup
+
+# Start production servers
+npm start
+```
 
 ---
 
@@ -29,19 +46,27 @@ A lightweight, self-hosted visual sitemap generator. Crawl websites, edit sitema
 
 ---
 
-## 🐳 Docker Compose (Advanced)
-If you prefer command line, open PowerShell in the project folder and run:
-```powershell
+## 🐳 Docker Compose (Alternative)
+If you prefer Docker, you can still use the original Docker setup:
+```bash
 docker-compose up --build
 ```
 
 ---
 
-## 🛠️ Troubleshooting (Windows)
-- Make sure Docker Desktop is running before starting.
-- If ports are busy, close other apps using 5173 or 3000.
-- If you see permission errors, run Docker Desktop as administrator.
-- For updates, just re-download the ZIP and replace the folder.
+## 🛠️ Troubleshooting
+
+### Common Issues
+- **Node.js not found**: Install Node.js from https://nodejs.org/ (version 16+)
+- **Port already in use**: Close other apps using ports 5173 or 3000
+- **Permission errors**: Run command prompt as administrator
+- **Build failures**: Clear node_modules and reinstall: `npm run clean && npm run install:all`
+
+### System Requirements
+- **Node.js**: Version 16 or higher
+- **npm**: Version 8 or higher (comes with Node.js)
+- **Memory**: At least 2GB RAM
+- **Disk**: At least 500MB free space
 
 ---
 
@@ -60,7 +85,10 @@ docker-compose up --build
 - 🗺️ XML sitemap export
 - 📝 Visual sitemap editing with drag-and-drop support
 - 💾 Persistent storage using SQLite
-- 🐳 Easy deployment with Docker
+- 🎨 Modern UI with Tailwind CSS
+- 🌙 Dark mode support
+- 🚀 Easy local development (no Docker required)
+- 🐳 Docker support for production deployment
 
 ### Quick Start
 

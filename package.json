@@ -1,0 +1,36 @@
+{
+  "name": "sitemap-generator",
+  "version": "1.0.0",
+  "description": "A lightweight, self-hosted visual sitemap generator",
+  "scripts": {
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run serve:frontend\"",
+    "start:backend": "cd backend && npm start",
+    "serve:frontend": "cd frontend && npm run preview",
+    "clean": "rimraf backend/node_modules frontend/node_modules backend/data.sqlite",
+    "setup": "npm run install:all && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "sitemap",
+    "crawler",
+    "visualization",
+    "graph",
+    "seo"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
