@@ -49,18 +49,34 @@ A comprehensive, self-hosted web application for planning website projects local
 
 ## Quick Start (Windows 11)
 
-### Option 1: One-Click Setup
+### Prerequisites
+- **Node.js** 16+ ([Download here](https://nodejs.org/))
+- **npm** 8+ (included with Node.js)
+- No additional build tools required - prebuilt binaries included!
+
+### Option 1: One-Click Setup (Recommended)
 1. **Install [Node.js](https://nodejs.org/) (version 16 or higher)**
+   - Download the Windows installer (.msi)
+   - Run the installer with default settings
+   - Restart your command prompt after installation
+
 2. **Download this project**
    - Clone: `git clone <repository-url>`
-   - Or download as ZIP from GitHub
+   - Or download as ZIP from GitHub and extract
+
 3. **Double-click `setup.bat`**
    - Installs all dependencies automatically
-   - Builds the frontend
+   - Prebuilt SQLite binaries will be downloaded
+   - Builds the frontend (may take 2-3 minutes)
+   - Wait for "Setup completed successfully!"
+
 4. **Double-click `start-dev.bat`**
    - Starts both frontend and backend servers
+   - Two terminal windows will open
+
 5. **Open [http://localhost:5173](http://localhost:5173)**
    - Start planning your website projects!
+   - Backend API: http://localhost:3000
 
 ### Option 2: Command Line
 ```bash
@@ -236,27 +252,129 @@ wireframe_components (id, wireframe_page_id, type, x, y, width, height, properti
 
 ## Troubleshooting
 
-### Common Issues
+### Common Issues on Windows
 
-**Port already in use:**
-- Close other applications using ports 5173 or 3000
-- Or modify ports in `backend/server.js` and `frontend/vite.config.js`
+#### better-sqlite3 Installation Issues
 
-**Node.js not found:**
-- Install from https://nodejs.org/
-- Restart terminal/command prompt after installation
+**Problem:** Native dependency errors during `npm install`
 
-**Database errors:**
-- Delete `backend/sitemap.db` to reset
-- Restart the application
+**Solutions:**
+1. **Use prebuilt binaries (Recommended):**
+   ```bash
+   # The package automatically downloads prebuilt binaries
+   # No action needed - this is the default behavior
+   ```
 
-**Build failures:**
-- Run `npm run clean` to remove old files
-- Run `npm run install:all` to reinstall dependencies
+2. **If prebuilt binaries fail:**
+   ```bash
+   # Clear npm cache and retry
+   npm cache clean --force
+   cd backend
+   rmdir /s /q node_modules
+   npm install
+   ```
 
-**Dark mode not persisting:**
+3. **Last resort - Install Windows Build Tools:**
+   ```bash
+   # Run as Administrator in PowerShell
+   npm install --global windows-build-tools
+   ```
+   Note: This requires ~3GB disk space and 20-30 minutes
+
+#### PostCSS Configuration Issues
+
+**Problem:** ES module syntax errors
+
+**Solution:** Already fixed - `postcss.config.js` uses CommonJS syntax
+
+#### Port Conflicts
+
+**Problem:** Port 5173 or 3000 already in use
+
+**Solutions:**
+1. **Find and close the application:**
+   ```bash
+   # In Command Prompt
+   netstat -ano | findstr :5173
+   taskkill /PID <PID> /F
+   ```
+
+2. **Vite will auto-select alternative port (5174, 5175, etc.)**
+   - Check terminal output for actual port
+
+3. **Change default ports:**
+   ```javascript
+   // frontend/vite.config.js
+   export default {
+     server: { port: 8080 }
+   }
+
+   // backend/server.js
+   await fastify.listen({ port: 4000, host: '0.0.0.0' })
+   ```
+
+#### Docker vs Native Installation
+
+**Problem:** Deciding between Docker and native installation
+
+**Recommendation for Windows:**
+- ✅ **Native installation** (using setup.bat)
+  - Faster development
+  - Easier debugging
+  - No Docker overhead
+  - Prebuilt binaries handle native dependencies
+
+- ⚠️ **Docker** (optional)
+  - Use only if you prefer containerization
+  - Slower on Windows (WSL2 recommended)
+  - Good for production deployment
+
+#### Build Failures
+
+**Problem:** Frontend build fails
+
+**Solutions:**
+1. **Clear build cache:**
+   ```bash
+   cd frontend
+   rmdir /s /q node_modules dist
+   npm install
+   npm run build
+   ```
+
+2. **Check Node.js version:**
+   ```bash
+   node --version  # Should be 16.x or higher
+   ```
+
+3. **Update dependencies:**
+   ```bash
+   npm run clean
+   npm run install:all
+   ```
+
+#### Database Errors
+
+**Problem:** SQLite database corruption or schema errors
+
+**Solutions:**
+```bash
+# Stop the server first
+# Delete the database file
+del backend\sitemap.db
+
+# Restart - database will be recreated
+npm run dev
+```
+
+#### Dark Mode Not Persisting
+
+**Problem:** Dark mode resets after refresh
+
+**Solutions:**
 - Check browser localStorage is enabled
-- Clear browser cache and reload
+- Try a different browser (Chrome, Edge, Firefox)
+- Clear browser cache: Ctrl + Shift + Delete
 
 ---
 

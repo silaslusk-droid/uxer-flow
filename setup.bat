@@ -1,66 +1,96 @@
 @echo off
-echo Setting up Sitemap Generator...
+echo ================================================
+echo   Website Project Planner - Setup
+echo ================================================
 echo.
 
-echo Checking Node.js installation...
+REM Check Node.js
+echo [1/4] Checking Node.js installation...
 node --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: Node.js is not installed!
+    echo.
     echo Please install Node.js from https://nodejs.org/
-    echo Make sure to install version 16 or higher.
+    echo Minimum version required: 16.x or higher
+    echo.
     pause
     exit /b 1
 )
 
 echo Node.js version:
 node --version
-
 echo.
-echo Checking npm installation...
+
+REM Check npm
+echo [2/4] Checking npm installation...
 npm --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: npm is not installed!
-    echo Please install npm (usually comes with Node.js)
+    echo npm usually comes with Node.js. Please reinstall Node.js.
+    echo.
     pause
     exit /b 1
 )
 
 echo npm version:
 npm --version
-
 echo.
-echo Installing all dependencies...
+
+REM Install dependencies
+echo [3/4] Installing dependencies...
+echo This may take a few minutes...
+echo.
+
 call npm run install:all
 if %errorlevel% neq 0 (
+    echo.
+    echo ================================================
     echo ERROR: Failed to install dependencies!
-    echo Please check your internet connection and try again.
+    echo ================================================
+    echo.
+    echo Possible solutions:
+    echo 1. Check your internet connection
+    echo 2. Try running: npm cache clean --force
+    echo 3. Delete node_modules folders and try again
+    echo.
+    echo If you get errors about 'better-sqlite3':
+    echo - This is normal on Windows
+    echo - The package includes prebuilt binaries
+    echo - If it fails, you may need Windows Build Tools
+    echo.
     pause
     exit /b 1
 )
 
 echo.
-echo Building frontend...
+echo [4/4] Building frontend...
 call npm run build
 if %errorlevel% neq 0 (
+    echo.
     echo ERROR: Failed to build frontend!
+    echo Check the error messages above for details.
+    echo.
     pause
     exit /b 1
 )
 
 echo.
-echo ========================================
-echo Setup completed successfully!
-echo ========================================
+echo ================================================
+echo   Setup completed successfully!
+echo ================================================
 echo.
-echo To start the development environment:
-echo   - Windows: Double-click start-dev.bat
-echo   - Or run: npm run dev
+echo Next steps:
 echo.
-echo To start production mode:
-echo   - Run: npm start
+echo   1. Start the application:
+echo      - Double-click: start-dev.bat
+echo      - Or run: npm run dev
 echo.
-echo The application will be available at:
-echo   - Frontend: http://localhost:5173
-echo   - Backend: http://localhost:3000
+echo   2. Open your browser:
+echo      - Frontend: http://localhost:5173
+echo      - Backend API: http://localhost:3000
+echo.
+echo   3. Create your first project and start planning!
+echo.
+echo ================================================
 echo.
 pause
