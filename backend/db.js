@@ -112,6 +112,9 @@ function initializeDatabase() {
     `).run();
 }
 
+// Initialize database on module load
+initializeDatabase();
+
 // Database operations
 const dbOps = {
     // Projects
@@ -187,8 +190,5 @@ const dbOps = {
     `),
     deleteWireframeComponent: db.prepare('DELETE FROM wireframe_components WHERE id = ?')
 };
-
-// Initialize database on module load
-initializeDatabase();
 
 module.exports = { db, dbOps };
