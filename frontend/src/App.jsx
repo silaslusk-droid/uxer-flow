@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { projectsApi } from './api';
-import GraphEditor from './graph/GraphEditor';
+import SitemapEditor from './components/SitemapEditor';
+import UserFlowEditor from './components/UserFlowEditor';
+import WireframeEditor from './components/WireframeEditor';
+
+const TABS = [
+  { id: 'sitemap', label: 'Sitemap', icon: '🗺️' },
+  { id: 'userflow', label: 'User Flow', icon: '→' },
+  { id: 'wireframe', label: 'Wireframe', icon: '📐' }
+];
 
 export default function App() {
   const [projects, setProjects] = useState([]);
   const [currentProject, setCurrentProject] = useState(null);
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [crawlUrl, setCrawlUrl] = useState('');
+  const [activeTab, setActiveTab] = useState('sitemap');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Load projects on mount
   useEffect(() => {
     loadProjects();
-  }, []);
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
-  // Load project data when selected
-  useEffect(() => {
-    if (currentProject) {
-      loadProjectData(currentProject.id);
+    // Check for saved dark mode preference
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'true') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
     }
-  }, [currentProject]);
+  }, []);
 
   const loadProjects = async () => {
     try {
@@ -37,14 +36,11 @@ export default function App() {
     }
   };
 
-  const loadProjectData = async (projectId) => {
-    try {
-      const { data } = await projectsApi.get(projectId);
-      setNodes(data.nodes || []);
-      setEdges(data.edges || []);
-    } catch (error) {
-      console.error('Failed to load project data:', error);
-    }
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('darkMode', newMode.toString());
   };
 
   const createProject = async () => {
@@ -60,30 +56,11 @@ export default function App() {
     }
   };
 
-  const startCrawl = async () => {
-    if (!currentProject || !crawlUrl) return;
-
-    try {
-      const { data } = await projectsApi.crawl(currentProject.id, {
-        startUrl: crawlUrl,
-        maxDepth: 3,
-        maxPages: 200
-      });
-      
-      // Refresh project data after crawl
-      loadProjectData(currentProject.id);
-    } catch (error) {
-      console.error('Crawl failed:', error);
-    }
-  };
-
-  const exportSitemap = async () => {
+  const exportSitemapXML = async () => {
     if (!currentProject) return;
-
     try {
-      const { data } = await projectsApi.exportSitemap(currentProject.id);
-      const blob = new Blob([data], { type: 'application/xml' });
-      const url = window.URL.createObjectURL(blob);
+      const { data } = await projectsApi.exportSitemapXML(currentProject.id);
+      const url = window.URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
       a.download = `sitemap-${currentProject.id}.xml`;
@@ -94,136 +71,129 @@ export default function App() {
     }
   };
 
-  const handleNodeChange = async (nodeId, changes) => {
+  const exportSitemapCSV = async () => {
     if (!currentProject) return;
-
     try {
-      await projectsApi.updateNode(currentProject.id, nodeId, changes);
-      loadProjectData(currentProject.id);
+      const { data } = await projectsApi.exportSitemapCSV(currentProject.id);
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sitemap-${currentProject.id}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Failed to update node:', error);
-    }
-  };
-
-  const handleEdgeCreate = async (edge) => {
-    if (!currentProject) return;
-
-    try {
-      await projectsApi.createEdge(currentProject.id, edge);
-      loadProjectData(currentProject.id);
-    } catch (error) {
-      console.error('Failed to create edge:', error);
+      console.error('Export failed:', error);
     }
   };
 
   return (
-    <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
-      <div className="w-80 sidebar p-6 flex flex-col">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sitemap Generator</h1>
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {isDarkMode ? '☀️' : '🌙'}
-          </button>
-        </div>
-        
-        <div className="mb-6">
-          <button 
-            onClick={createProject}
-            className="btn btn-primary w-full"
-          >
-            + New Project
-          </button>
-        </div>
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      {/* Top Header */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              Website Project Planner
+            </h1>
 
-        <div className="mb-6">
-          <select 
-            value={currentProject?.id || ''} 
-            onChange={(e) => {
-              const project = projects.find(p => p.id === parseInt(e.target.value));
-              setCurrentProject(project);
-            }}
-            className="input"
-          >
-            <option value="">Select Project</option>
-            {projects.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {currentProject && (
-          <>
-            <div className="mb-6">
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Enter start URL (e.g., https://example.com)"
-                  value={crawlUrl}
-                  onChange={(e) => setCrawlUrl(e.target.value)}
-                  className="input"
-                />
-                <button 
-                  onClick={startCrawl}
-                  className="btn btn-primary w-full"
-                  disabled={!crawlUrl}
-                >
-                  🕷️ Start Crawl
-                </button>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <button 
-                onClick={exportSitemap}
-                className="btn btn-secondary w-full"
+            {/* Project Selector */}
+            <div className="flex items-center gap-2">
+              <select
+                value={currentProject?.id || ''}
+                onChange={(e) => {
+                  const project = projects.find(p => p.id === parseInt(e.target.value));
+                  setCurrentProject(project);
+                }}
+                className="input"
               >
-                📄 Export XML
+                <option value="">Select Project...</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={createProject}
+                className="btn btn-primary btn-sm"
+              >
+                + New
               </button>
             </div>
+          </div>
 
-            <div className="card p-4 flex-1">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Project Stats</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Nodes:</span>
-                  <span className="font-medium text-primary-600 dark:text-primary-400">{nodes.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Edges:</span>
-                  <span className="font-medium text-primary-600 dark:text-primary-400">{edges.length}</span>
-                </div>
+          <div className="flex items-center gap-2">
+            {currentProject && (
+              <div className="flex gap-2">
+                <button
+                  onClick={exportSitemapXML}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Export XML
+                </button>
+                <button
+                  onClick={exportSitemapCSV}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Export CSV
+                </button>
               </div>
-            </div>
-          </>
+            )}
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDarkMode ? '☀️' : '🌙'}
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        {currentProject && (
+          <div className="flex gap-1 mt-3">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-gray-50 dark:bg-gray-900 text-primary-600 dark:text-primary-400 border-t-2 border-primary-600'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Main Graph Area */}
-      <div className="flex-1 bg-white dark:bg-gray-800">
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
         {currentProject ? (
-          <GraphEditor
-            nodes={nodes}
-            edges={edges}
-            onNodeChange={handleNodeChange}
-            onEdgeCreate={handleEdgeCreate}
-          />
+          <>
+            {activeTab === 'sitemap' && <SitemapEditor projectId={currentProject.id} />}
+            {activeTab === 'userflow' && <UserFlowEditor projectId={currentProject.id} />}
+            {activeTab === 'wireframe' && <WireframeEditor projectId={currentProject.id} />}
+          </>
         ) : (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="text-6xl mb-4">🗺️</div>
+              <div className="text-6xl mb-4">📋</div>
               <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 No Project Selected
               </h2>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
                 Create a new project or select an existing one to get started
               </p>
+              <button
+                onClick={createProject}
+                className="btn btn-primary"
+              >
+                Create New Project
+              </button>
             </div>
           </div>
         )}
