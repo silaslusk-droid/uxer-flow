@@ -1,0 +1,16 @@
+# Node
+node_modules/
+
+# Build
+frontend/dist/
+backend/sitemap.db
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+sitemap-data/

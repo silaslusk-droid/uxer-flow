@@ -1,0 +1,16 @@
+{
+  "name": "sitemap-backend",
+  "version": "0.1.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "fastify": "^4.27.2",
+    "better-sqlite3": "^9.0.0",
+    "undici": "^5.28.2",
+    "cheerio": "^1.0.0-rc.12",
+    "@fastify/cors": "^8.4.1"
+  }
+}
