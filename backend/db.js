@@ -120,14 +120,15 @@ const dbOps = {
     createProject: db.prepare('INSERT INTO projects (name) VALUES (?) RETURNING *'),
     deleteProject: db.prepare('DELETE FROM projects WHERE id = ?'),
 
-    // Nodes
+    // Nodes (Sitemap pages)
     getProjectNodes: db.prepare('SELECT * FROM nodes WHERE project_id = ?'),
+    getNode: db.prepare('SELECT * FROM nodes WHERE id = ? AND project_id = ?'),
     createNode: db.prepare(`
-        INSERT INTO nodes (project_id, title, url, meta, x, y)
-        VALUES (?, ?, ?, ?, ?, ?) RETURNING *
+        INSERT INTO nodes (project_id, title, url, meta, status, notes, content, parent_id, x, y)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *
     `),
     updateNode: db.prepare(`
-        UPDATE nodes SET title = ?, url = ?, meta = ?, x = ?, y = ?
+        UPDATE nodes SET title = ?, url = ?, meta = ?, status = ?, notes = ?, content = ?, parent_id = ?, x = ?, y = ?
         WHERE id = ? AND project_id = ? RETURNING *
     `),
     deleteNode: db.prepare('DELETE FROM nodes WHERE id = ? AND project_id = ?'),
@@ -138,7 +139,53 @@ const dbOps = {
         INSERT INTO edges (project_id, source, target, type)
         VALUES (?, ?, ?, ?) RETURNING *
     `),
-    deleteEdge: db.prepare('DELETE FROM edges WHERE id = ? AND project_id = ?')
+    deleteEdge: db.prepare('DELETE FROM edges WHERE id = ? AND project_id = ?'),
+
+    // User Flow Elements
+    getFlowElements: db.prepare('SELECT * FROM flow_elements WHERE project_id = ?'),
+    getFlowElement: db.prepare('SELECT * FROM flow_elements WHERE id = ? AND project_id = ?'),
+    createFlowElement: db.prepare(`
+        INSERT INTO flow_elements (project_id, type, label, x, y, width, height, style, node_reference_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *
+    `),
+    updateFlowElement: db.prepare(`
+        UPDATE flow_elements SET type = ?, label = ?, x = ?, y = ?, width = ?, height = ?, style = ?, node_reference_id = ?
+        WHERE id = ? AND project_id = ? RETURNING *
+    `),
+    deleteFlowElement: db.prepare('DELETE FROM flow_elements WHERE id = ? AND project_id = ?'),
+
+    // User Flow Connections
+    getFlowConnections: db.prepare('SELECT * FROM flow_connections WHERE project_id = ?'),
+    createFlowConnection: db.prepare(`
+        INSERT INTO flow_connections (project_id, source_id, target_id, label)
+        VALUES (?, ?, ?, ?) RETURNING *
+    `),
+    deleteFlowConnection: db.prepare('DELETE FROM flow_connections WHERE id = ? AND project_id = ?'),
+
+    // Wireframe Pages
+    getWireframePages: db.prepare('SELECT * FROM wireframe_pages WHERE project_id = ?'),
+    getWireframePage: db.prepare('SELECT * FROM wireframe_pages WHERE id = ? AND project_id = ?'),
+    createWireframePage: db.prepare(`
+        INSERT INTO wireframe_pages (project_id, node_id, name, view_mode)
+        VALUES (?, ?, ?, ?) RETURNING *
+    `),
+    updateWireframePage: db.prepare(`
+        UPDATE wireframe_pages SET node_id = ?, name = ?, view_mode = ?
+        WHERE id = ? AND project_id = ? RETURNING *
+    `),
+    deleteWireframePage: db.prepare('DELETE FROM wireframe_pages WHERE id = ? AND project_id = ?'),
+
+    // Wireframe Components
+    getWireframeComponents: db.prepare('SELECT * FROM wireframe_components WHERE wireframe_page_id = ?'),
+    createWireframeComponent: db.prepare(`
+        INSERT INTO wireframe_components (wireframe_page_id, type, x, y, width, height, properties)
+        VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *
+    `),
+    updateWireframeComponent: db.prepare(`
+        UPDATE wireframe_components SET type = ?, x = ?, y = ?, width = ?, height = ?, properties = ?
+        WHERE id = ? RETURNING *
+    `),
+    deleteWireframeComponent: db.prepare('DELETE FROM wireframe_components WHERE id = ?')
 };
 
 // Initialize database on module load
