@@ -18,17 +18,22 @@ function initializeDatabase() {
         )
     `).run();
 
-    // Create nodes table
+    // Create nodes table (Sitemap pages)
     db.prepare(`
         CREATE TABLE IF NOT EXISTS nodes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_id INTEGER NOT NULL,
             title TEXT NOT NULL,
-            url TEXT NOT NULL,
+            url TEXT,
             meta TEXT,
+            status TEXT DEFAULT 'planned',
+            notes TEXT,
+            content TEXT,
+            parent_id INTEGER,
             x REAL,
             y REAL,
-            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES nodes(id) ON DELETE SET NULL
         )
     `).run();
 
@@ -43,6 +48,66 @@ function initializeDatabase() {
             FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
             FOREIGN KEY (source) REFERENCES nodes(id) ON DELETE CASCADE,
             FOREIGN KEY (target) REFERENCES nodes(id) ON DELETE CASCADE
+        )
+    `).run();
+
+    // Create user flow elements table
+    db.prepare(`
+        CREATE TABLE IF NOT EXISTS flow_elements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            label TEXT,
+            x REAL NOT NULL,
+            y REAL NOT NULL,
+            width REAL DEFAULT 120,
+            height REAL DEFAULT 60,
+            style TEXT,
+            node_reference_id INTEGER,
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY (node_reference_id) REFERENCES nodes(id) ON DELETE SET NULL
+        )
+    `).run();
+
+    // Create user flow connections table
+    db.prepare(`
+        CREATE TABLE IF NOT EXISTS flow_connections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            source_id INTEGER NOT NULL,
+            target_id INTEGER NOT NULL,
+            label TEXT,
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY (source_id) REFERENCES flow_elements(id) ON DELETE CASCADE,
+            FOREIGN KEY (target_id) REFERENCES flow_elements(id) ON DELETE CASCADE
+        )
+    `).run();
+
+    // Create wireframe pages table
+    db.prepare(`
+        CREATE TABLE IF NOT EXISTS wireframe_pages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            node_id INTEGER,
+            name TEXT NOT NULL,
+            view_mode TEXT DEFAULT 'desktop',
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE SET NULL
+        )
+    `).run();
+
+    // Create wireframe components table
+    db.prepare(`
+        CREATE TABLE IF NOT EXISTS wireframe_components (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            wireframe_page_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            x REAL NOT NULL,
+            y REAL NOT NULL,
+            width REAL NOT NULL,
+            height REAL NOT NULL,
+            properties TEXT,
+            FOREIGN KEY (wireframe_page_id) REFERENCES wireframe_pages(id) ON DELETE CASCADE
         )
     `).run();
 }
